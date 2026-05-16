@@ -1,10 +1,10 @@
 diff --git a/keyboards/crkbd/crkbd.c b/keyboards/crkbd/crkbd.c
-index ae94088d..54879cd6 100644
+index ae94088d..1e212db8 100644
 --- a/keyboards/crkbd/crkbd.c
 +++ b/keyboards/crkbd/crkbd.c
-@@ -17,6 +17,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@@ -17,6 +17,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
  #include "quantum.h"
 +#include "crkbd_ruen/ruen.h"
 +
@@ -20,23 +20,46 @@ index ae94088d..54879cd6 100644
 +
 +// qmk-hid-host data type enum — must match host-side `DataType` in
 +// https://github.com/zzeneg/qmk-hid-host/blob/main/src/data_type.rs
-+// (_TIME = 0xAA, _VOLUME, _LAYOUT, ...)
-+#define HID_HOST_LAYOUT 0xAC
++// (_TIME = 0xAA, _VOLUME, _LAYOUT, ...). 0xB0 is a RuEnSync-specific
++// extension (upstream qmk-hid-host uses up to 0xAF) carrying a 4-byte
++// ASCII magic identifying the host OS — see
++// https://github.com/alexey1312/ruen-sync-mac.
++#define HID_HOST_LAYOUT  0xAC
++#define HID_HOST_OS_TYPE 0xB0
 +
 +void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
 +    if (length < 2) return;
-+    if (data[0] != HID_HOST_LAYOUT) return;
-+    // data[1] is the index into the `layouts` array configured in
-+    // qmk-hid-host.json. Our convention: index 0 = English, 1 = Russian.
-+    lang_sync_to(data[1] == 0 ? LANG_EN : LANG_RU);
++
++    if (data[0] == HID_HOST_LAYOUT) {
++        // data[1] is the index into the `layouts` array configured in
++        // qmk-hid-host.json. Our convention: index 0 = English, 1 = Russian.
++        lang_sync_to(data[1] == 0 ? LANG_EN : LANG_RU);
++        return;
++    }
++
++    if (data[0] == HID_HOST_OS_TYPE && length >= 5) {
++        // Honour only the first OS-type announcement per boot so a manual
++        // USER28 (LG_TG_MAC) override is not clobbered by routine daemon
++        // reconnects. The "no toggle after reflash" goal is still met:
++        // controller reboots on reflash, the flag resets, the next MAC\0
++        // lands.
++        static bool initial_os_msg_seen = false;
++        if (initial_os_msg_seen) return;
++        if (data[1] == 'M' && data[2] == 'A' && data[3] == 'C' && data[4] == 0) {
++            set_ruen_mac_layout(true);
++            initial_os_msg_seen = true;
++        }
++        // LNX\0 / WIN\0 / BSD\0 are deliberately not handled — RuEnSync is
++        // macOS-only, qmk-hid-host does not send 0xB0.
++    }
 +}
-
+ 
  #ifdef SWAP_HANDS_ENABLE
  __attribute__((weak)) const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
-@@ -155,10 +179,18 @@ bool oled_task_kb(void) {
+@@ -155,10 +202,18 @@ bool oled_task_kb(void) {
      return false;
  }
-
+ 
 -bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 +bool process_record_kb_oled(uint16_t keycode, keyrecord_t *record) {
      if (record->event.pressed) {

@@ -4,7 +4,11 @@ Custom Vial-QMK firmware for **Corne (crkbd) rev1** with:
 
 - **RuEn engine** — Mac language switching aware of internal `cur_lang` state, with auto-EN-switching bracket keycodes and unified punctuation across Russian/English layouts.
 - **Caps Word** — temporary CAPS that auto-exits on word break (Space/Enter/Esc or any non-letter/non-digit). Activates by holding both home-row mod-tap shifts past `TAPPING_TERM`, or by double-tapping the plain `KC_LSFT`. `-` becomes `_` inside the word.
-- **Raw HID host sync** — `raw_hid_receive_kb` accepts `[0xAC, idx]` packets from the host and updates `cur_lang` without sending Cmd+Space. Closes the classic RuEn desync when language is switched outside the keyboard (Punto, Cmd+Space from MacBook keyboard, mouse menu bar click). Two compatible host apps: [**RuEnSync**](https://github.com/alexey1312/ruen-sync-mac) (native macOS menubar app, recommended) or [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) (cross-platform Rust daemon).
+- **Raw HID host sync** — `raw_hid_receive_kb` accepts two packet shapes from the host:
+  - `[0xAC, idx]` — layout sync (qmk-hid-host `_LAYOUT`). Updates `cur_lang` without sending Cmd+Space. Closes the classic RuEn desync when language is switched outside the keyboard (Punto, Cmd+Space from MacBook keyboard, mouse menu bar click).
+  - `[0xB0, 'M','A','C','\0']` — OS-type announcement (RuEnSync extension, magic format from [nomis/qmk-hid-identify](https://github.com/nomis/qmk-hid-identify)). On the **first** such packet after boot, sets `mac_layout = true` so Russian punctuation matches macOS-Russian without requiring a manual `RuEn Mac Tg` toggle after every reflash. Subsequent `0xB0` packets in the same boot are ignored — a user-pressed `RuEn Mac Tg` override survives daemon reconnects.
+
+  Compatible host apps: [**RuEnSync**](https://github.com/alexey1312/ruen-sync-mac) (native macOS menubar app, sends both packet shapes, recommended) or [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) (cross-platform Rust daemon, sends only `0xAC`).
 - **Combos** (16 slots), **Mouse keys**, **Extrakeys** (consumer / media), **Tap dance** (8 slots), **Key overrides** (8 slots).
 - **No RGB, no OLED** — disabled to fit 28 KB ATmega32u4 flash.
 
@@ -148,4 +152,4 @@ State is RAM-only (no EEPROM persistence). At boot:
 
 If desynced, use `RuEn Sync` (USER01) to flip the internal flag without sending keys, or `RuEn En` / `RuEn Ru` to force a specific state.
 
-`RuEn Mac Tg` (USER28) toggles between Mac Russian and Russian-PC variants. Default is Russian-PC (`mac_layout=false`) — press USER28 once if you need Mac Russian behaviour.
+`RuEn Mac Tg` (USER28) toggles between Mac Russian and Russian-PC variants. Default at boot is Russian-PC (`mac_layout=false`). When the [RuEnSync](https://github.com/alexey1312/ruen-sync-mac) daemon is running, it auto-pushes a `[0xB0, MAC\0]` packet on its first connect after boot which flips the flag to `true` — USER28 then acts as a manual override / fallback (useful on machines without the daemon, or for users whose system Russian variant is `Russian — PC`). The auto-flip only applies the first time per boot, so a USER28 override is preserved across daemon reconnects.

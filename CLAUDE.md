@@ -94,19 +94,22 @@ Do **not** define `COMBO_COUNT` — Vial-QMK derives it from `VIAL_COMBO_ENTRIES
 - Keycode enum starts at `LG_START = QK_KB`. 36 keycodes total (see `firmware/README.md` for the full USER index → LG_* table).
 - `set_lang()` sends Cmd+Space (LCtl+Space if `keymap_config.swap_lctl_lgui`) and updates `cur_lang`.
 - `lang_sync_to(uint8_t lang)` does an **absolute** set of `cur_lang` without sending Cmd+Space. Used by `raw_hid_receive_kb` when the host daemon reports an external switch.
-- State is **RAM-only** — boots in `LANG_EN` and `mac_layout=false`. `mac_layout=false` matches user's actual Russian keyboard layout (PC-Russian variant) per empirical testing. The `RuEn Mac Tg` (USER28) keycode flips to `mac_layout=true` for macOS Russian variant when needed.
+- State is **RAM-only** — boots in `LANG_EN` and `mac_layout=false`. `mac_layout=false` matches user's actual Russian keyboard layout (PC-Russian variant) per empirical testing. The `RuEn Mac Tg` (USER28) keycode flips to `mac_layout=true` for macOS Russian variant when needed. With the RuEnSync daemon running, `mac_layout` is auto-pushed to `true` on the first host handshake after boot via the `0xB0` packet (see Raw HID host sync section below).
 
 ### Raw HID host sync (optional)
 
-`firmware/crkbd.c.patch` defines `raw_hid_receive_kb`. It only listens for one packet shape:
+`firmware/crkbd.c.patch` defines `raw_hid_receive_kb`. It listens for two packet shapes:
 
 ```
-[0xAC, idx]    // 0xAC = qmk-hid-host's _LAYOUT, idx 0 = EN, anything else = RU
+[0xAC, idx]            // qmk-hid-host _LAYOUT; idx 0 = EN, anything else = RU
+[0xB0, 'M','A','C',0]  // RuEnSync _OS_TYPE; first one after boot sets
+                       // mac_layout=true. Subsequent ones are ignored so a
+                       // USER28 (LG_TG_MAC) override survives daemon reconnects.
 ```
 
-`0xAC` matches the `_LAYOUT` enum value in [qmk-hid-host's `data_type.rs`](https://github.com/zzeneg/qmk-hid-host/blob/main/src/data_type.rs). Vial-QMK's own Raw HID protocol uses different first-byte values, so it does not collide.
+`0xAC` matches the `_LAYOUT` enum value in [qmk-hid-host's `data_type.rs`](https://github.com/zzeneg/qmk-hid-host/blob/main/src/data_type.rs). Vial-QMK's own Raw HID protocol uses different first-byte values, so it does not collide. `0xB0` is a RuEnSync-specific extension (upstream qmk-hid-host uses up to `0xAF`); payload is the 4-byte ASCII magic from [nomis/qmk-hid-identify](https://github.com/nomis/qmk-hid-identify) (`MAC\0` / `LNX\0` / `WIN\0` / `BSD\0`). RuEnSync is macOS-only and only ever sends `MAC\0`; qmk-hid-host (Rust) does not send `0xB0` at all.
 
-When the daemon is running and connected, every external language switch (Cmd+Space from another keyboard, Punto Switcher, mouse menu-bar click) is mirrored into `cur_lang` within ~100 ms (the daemon polls TIS at that interval). When the daemon is not running, the firmware falls back to its built-in `RuEn Toggle` sync. See `tools/qmk-hid-host/`.
+When the daemon is running and connected, every external language switch (Cmd+Space from another keyboard, Punto Switcher, mouse menu-bar click) is mirrored into `cur_lang` within ~100 ms (the daemon polls TIS at that interval). RuEnSync additionally pushes `0xB0` on every connect; the firmware respects only the first one per boot. When the daemon is not running, the firmware falls back to its built-in `RuEn Toggle` sync and `mac_layout` stays at its boot default. See `tools/qmk-hid-host/`.
 
 ### Critical architectural traps (these cost hours to debug — don't forget)
 
