@@ -41,9 +41,11 @@ Key fields:
 
 ### Regenerating `imgs/corne-layout.svg`
 
-After editing `corne.vil`, the embedded layout image in `README.md` (`## Visual map`) must be re-rendered manually — there is no hook or CI step doing this. The converter lives in `tools/vil-to-keymap-drawer/`.
+After editing `corne.vil`, the embedded layout image in `README.md` (`## Visual map`) needs to be re-rendered. The converter lives in `tools/vil-to-keymap-drawer/`.
 
-The wrapper `render.sh` expects a `keymap` CLI in `PATH`. Locally `keymap-drawer` is not installed; running it via `KEYMAP="uvx --from keymap-drawer keymap" ./render.sh` does **not** work — Bash treats the whole string as one command and reports `command not found`. Call `uvx` directly instead:
+**On `main`, CI does this automatically.** `.github/workflows/render-corne-svg.yml` runs on every push that touches `corne.vil` (or the converter itself), regenerates the SVG, and — if the result differs from the committed version — pushes a follow-up `chore: refresh corne-layout.svg` commit as `github-actions[bot]`. Just edit `corne.vil`, push, and `git pull` after the workflow finishes.
+
+To render locally (e.g. to preview a layout edit before pushing): the wrapper `render.sh` expects a `keymap` CLI in `PATH`. `keymap-drawer` is typically not installed locally; running it via `KEYMAP="uvx --from keymap-drawer keymap" ./render.sh` does **not** work — Bash treats the whole string as one command and reports `command not found`. Call `uvx` directly instead:
 
 ```bash
 cd tools/vil-to-keymap-drawer
@@ -51,7 +53,7 @@ python3 vil2yaml.py ../../corne.vil -o corne.yaml
 uvx --from keymap-drawer keymap draw corne.yaml > ../../imgs/corne-layout.svg
 ```
 
-Both `corne.yaml` (intermediate, ~3 KB) and `imgs/corne-layout.svg` (~35 KB) are committed. To sanity-check that only labels changed and not coordinates, diff with `git diff imgs/corne-layout.svg | grep '^[+-]<text'` — it surfaces just the key captions that moved.
+`corne.yaml` is gitignored; `imgs/corne-layout.svg` (~35 KB) is committed. To sanity-check that only labels changed and not coordinates, diff with `git diff imgs/corne-layout.svg | grep '^[+-]<text'` — it surfaces just the key captions that moved.
 
 ## Firmware (in `firmware/`)
 

@@ -1,0 +1,48 @@
+name: Render Corne layout SVG
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'corne.vil'
+      - 'tools/vil-to-keymap-drawer/**'
+      - '.github/workflows/render-corne-svg.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-corne-svg-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install keymap-drawer
+        run: pip install keymap-drawer
+
+      - name: Render imgs/corne-layout.svg
+        working-directory: tools/vil-to-keymap-drawer
+        run: |
+          python3 vil2yaml.py ../../corne.vil -o corne.yaml
+          keymap draw corne.yaml > ../../imgs/corne-layout.svg
+
+      - name: Commit refreshed SVG
+        run: |
+          if git diff --quiet imgs/corne-layout.svg; then
+            echo "SVG already up to date — nothing to commit."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add imgs/corne-layout.svg
+          git commit -m 'chore: refresh corne-layout.svg'
+          git push
