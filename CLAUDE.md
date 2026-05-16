@@ -39,6 +39,20 @@ Key fields:
 - `key_override`: 8 slots. 4 active: Shift+Bspc → Del, Cmd+H → blocked (any Gui), Shift+Esc → `\`, Cmd+M → blocked (any Gui; safety net against accidental Minimize Window from home-row mod-tap on K).
 - `customKeycodes` indices ("USER00" .. "USER35" in the JSON) map to `QK_KB + N` in the firmware enum — **not** `QK_USER`. See firmware section.
 
+### Regenerating `imgs/corne-layout.svg`
+
+After editing `corne.vil`, the embedded layout image in `README.md` (`## Visual map`) must be re-rendered manually — there is no hook or CI step doing this. The converter lives in `tools/vil-to-keymap-drawer/`.
+
+The wrapper `render.sh` expects a `keymap` CLI in `PATH`. Locally `keymap-drawer` is not installed; running it via `KEYMAP="uvx --from keymap-drawer keymap" ./render.sh` does **not** work — Bash treats the whole string as one command and reports `command not found`. Call `uvx` directly instead:
+
+```bash
+cd tools/vil-to-keymap-drawer
+python3 vil2yaml.py ../../corne.vil -o corne.yaml
+uvx --from keymap-drawer keymap draw corne.yaml > ../../imgs/corne-layout.svg
+```
+
+Both `corne.yaml` (intermediate, ~3 KB) and `imgs/corne-layout.svg` (~35 KB) are committed. To sanity-check that only labels changed and not coordinates, diff with `git diff imgs/corne-layout.svg | grep '^[+-]<text'` — it surfaces just the key captions that moved.
+
 ## Firmware (in `firmware/`)
 
 To rebuild the firmware, the contents of `firmware/` need to be applied to a clone of [vial-kb/vial-qmk](https://github.com/vial-kb/vial-qmk) (branch `vial`):
@@ -119,6 +133,7 @@ When the daemon is running and connected, every external language switch (Cmd+Sp
 4. **Changing `customKeycodes` array shape (adding/removing entries) resets the EEPROM on next boot.** Vial detects the layout-signature mismatch and clears the dynamic keymap. After such a reflash, `File → Load saved layout` is required again. Stable `vial.json` = stable EEPROM across flashes.
 5. **`QK_BOOT` is on Layer 3 / Q-position** of `corne.vil`. Used for subsequent reflashes without touching the physical reset button.
 6. **Raw HID is shared between Vial and qmk-hid-host.** `via.c` dispatches via `raw_hid_receive`; if the command-id is not a Vial/VIA command, it forwards to `raw_hid_receive_kb`. Our `crkbd.c.patch` puts the qmk-hid-host handler there. **Do NOT define `raw_hid_receive` (without the `_kb` suffix)** — it would override Vial's entry point and break the Vial UI completely.
+7. **Wire format for host-side `[0xAC, idx]` packets is 32 bytes, NOT 33.** QMK's `RAW_EPSIZE` is 32 — the firmware reads `data[0]` straight off the Interrupt OUT endpoint. Two host APIs differ on whether the buffer should carry a leading `0x00` report-ID byte: hidapi (`qmk-hid-host` daemon) takes a 33-byte buffer `[0x00, 0xAC, idx, …]` and **strips** the leading `0x00` before writing to IOKit. macOS's `IOHIDDeviceSetReport` does **not** strip — it sends the buffer as-is per Apple docs ("the bytes are sent as-is to the device"). A native macOS implementation that copies hidapi's buffer shape but calls `IOHIDDeviceSetReport` directly will silently desync: firmware sees `data[0] = 0x00`, the `data[0] == 0xAC` check fails, packet is dropped, `cur_lang` never updates, user keeps pressing `LG_SYNC` manually to recover. (This bug shipped in early RuEnSync builds.)
 
 ### Slot counts exposed to Vial UI
 
