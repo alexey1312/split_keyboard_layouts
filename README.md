@@ -45,6 +45,7 @@ See [`firmware/README.md`](firmware/README.md) for build & flash instructions an
 - `Shift + Backspace` → `Delete`
 - `Cmd + H` → blocked (prevents accidental window hide)
 - `Shift + Esc` → `\`
+- `Cmd + M` → blocked (prevents accidental Minimize Window — usually triggered by RGui mod-tap on `K` lingering during fast typing)
 
 ### RuEn keycodes
 

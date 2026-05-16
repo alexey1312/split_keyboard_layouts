@@ -34,7 +34,7 @@ Key fields:
 - `uid`: tied to the physical board. When loading a layout with mismatched UID, Vial warns "Saved keymap belongs to a different keyboard" — clicking Yes is fine. Current Corne UID = `15126841831861545787`.
 - `tap_dance`: 8 slots. TD(0) in `corne.vil` is the language switch: tap = USER00 (RuEn Toggle, sends Cmd+Space and updates RuEn state), hold = LAlt.
 - `combo`: 16 slots. 10 active combos for bracket pairs and `\` — see README.
-- `key_override`: 8 slots. 3 active: Shift+Bspc → Del, Cmd+H → blocked, Shift+Esc → `\`.
+- `key_override`: 8 slots. 4 active: Shift+Bspc → Del, Cmd+H → blocked (any Gui), Shift+Esc → `\`, Cmd+M → blocked (any Gui; safety net against accidental Minimize Window from home-row mod-tap on K).
 - `customKeycodes` indices ("USER00" .. "USER35" in the JSON) map to `QK_KB + N` in the firmware enum — **not** `QK_USER`. See firmware section.
 
 ## Firmware (in `firmware/`)
@@ -70,8 +70,14 @@ LTO is required — without it the build does not fit. Currently ~27.5 KB / 28.6
 ```
 VIAL_COMBO_ENTRIES 16
 COMBO_TERM 50
-TAPPING_TERM 180
+TAPPING_TERM 200
 ```
+
+`TAPPING_TERM` was raised from 180 to 200 to reduce false hold-triggers on home-row mods (e.g. lingering on Russian "л" = physical K = `RGUI_T(KC_K)` and producing accidental RGui+next-key combinations like Cmd+M).
+
+`IGNORE_MOD_TAP_INTERRUPT` is now QMK's default behaviour — the flag was removed from QMK and **must not be set explicitly** (compile error).
+
+`QMK_SETTINGS = no`: enabling it would add ~5.5 KB of Vial UI runtime tuning support, but firmware does not fit (overflow by ~4.3 KB on ATmega32u4). For dynamic tuning a RP2040-based controller (Elite-Pi / Liatris) would be required.
 
 Do **not** define `COMBO_COUNT` — Vial-QMK derives it from `VIAL_COMBO_ENTRIES` and a duplicate `#define` errors out.
 

@@ -24,7 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #undef DYNAMIC_KEYMAP_LAYER_COUNT
 #define DYNAMIC_KEYMAP_LAYER_COUNT 4
-#define TAPPING_TERM 180
+
+// Mod-tap tuning for fast typing on home-row mods.
+// IGNORE_MOD_TAP_INTERRUPT is now QMK's default and the flag was removed.
+// TAPPING_TERM raised from 180 to 200 to reduce false hold-trigger when
+// typing fast (e.g. Russian "л" lingering and producing RGui+next-key).
+#define TAPPING_TERM 200
 
 #define VIAL_COMBO_ENTRIES 16
 #define COMBO_TERM 50
