@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Vial-QMK build artefacts (in case anyone builds inside this repo)
+*.hex
+*.bin
+*.uf2
+*.elf
+
+# Backup files
+*.bak
+*.bak[0-9]
+*.orig
