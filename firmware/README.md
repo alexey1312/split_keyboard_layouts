@@ -12,7 +12,28 @@ Final flash usage: ~28.2 KB of 28.6 KB available (~420 B free). Adding any furth
 
 ## How to build
 
-These sources are designed to drop into a clone of [vial-kb/vial-qmk](https://github.com/vial-kb/vial-qmk) (branch `vial`).
+### Quick start (recommended)
+
+```bash
+./bootstrap.sh        # first run downloads ~500 MB of vial-qmk; subsequent runs are seconds
+```
+
+The script clones [vial-kb/vial-qmk](https://github.com/vial-kb/vial-qmk) into
+`firmware/.vial-qmk/`, syncs our sources, applies `crkbd.c.patch`, runs
+`make crkbd/rev1:vial`, and drops the result at
+`firmware/build/crkbd_rev1_vial.hex`.
+
+Flags:
+
+- `./bootstrap.sh --refresh` — `git pull` vial-qmk before building
+- `./bootstrap.sh --flash` — build, then prompt for reset and `qmk flash`
+
+Prereqs (one-time): `brew install avr-gcc@8 dfu-programmer qmk/qmk/qmk`.
+
+### Manual ritual (advanced)
+
+If you prefer to keep vial-qmk in a custom location or to use it for other
+keyboards, do the same steps by hand:
 
 ```bash
 # 1. Clone vial-qmk (if you don't have it already)
@@ -49,6 +70,7 @@ The right half does not need to be reflashed if it already runs working firmware
 ```
 firmware/
 ├── README.md             # this file
+├── bootstrap.sh          # one-command clone-sync-patch-build pipeline
 ├── crkbd_ruen/           # → keyboards/crkbd/crkbd_ruen/
 │   ├── ruen.h            # RuEn keycode enum (starts at QK_KB, not QK_USER)
 │   └── ruen.c            # RuEn engine: set_lang(), per-keycode handlers

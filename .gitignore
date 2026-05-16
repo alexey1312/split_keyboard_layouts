@@ -16,6 +16,11 @@
 *.uf2
 *.elf
 
+# Bootstrap script working dirs
+firmware/.vial-qmk
+firmware/.vial-qmk/
+firmware/build/
+
 # Backup files
 *.bak
 *.bak[0-9]
