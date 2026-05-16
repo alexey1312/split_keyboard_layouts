@@ -66,3 +66,10 @@ void housekeeping_task_ruen(void);
 uint8_t get_cur_lang(void);
 void    set_ruen_mac_layout(bool mac_layout);
 bool    get_ruen_mac_layout(void);
+
+// Absolute set of cur_lang without sending Cmd+Space.
+// Used by raw_hid_receive_kb when the host daemon reports an external
+// language switch (mouse-click on menu bar, Cmd+Space from MacBook keyboard,
+// Punto Switcher auto-conversion, etc.). Keeps cur_lang in sync without
+// causing a language flip loop.
+void    lang_sync_to(uint8_t lang);

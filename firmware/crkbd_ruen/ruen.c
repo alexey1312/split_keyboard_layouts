@@ -17,6 +17,10 @@ bool get_ruen_mac_layout(void) {
     return mac_layout;
 }
 
+void lang_sync_to(uint8_t lang) {
+    cur_lang = lang;
+}
+
 static void set_lang(uint8_t lang) {
     if (cur_lang == lang) return;
     uint8_t mods = get_mods();

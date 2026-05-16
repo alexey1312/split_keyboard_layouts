@@ -3,10 +3,12 @@
 Custom Vial-QMK firmware for **Corne (crkbd) rev1** with:
 
 - **RuEn engine** — Mac language switching aware of internal `cur_lang` state, with auto-EN-switching bracket keycodes and unified punctuation across Russian/English layouts.
+- **Caps Word** — temporary CAPS that auto-exits on word break (Space/Enter/Esc or any non-letter/non-digit). Activates by holding both home-row mod-tap shifts past `TAPPING_TERM`, or by double-tapping the plain `KC_LSFT`. `-` becomes `_` inside the word.
+- **Raw HID host sync** — `raw_hid_receive_kb` accepts `[0xAC, idx]` packets from the [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) daemon and updates `cur_lang` without sending Cmd+Space. Closes the classic RuEn desync when language is switched outside the keyboard (Punto, Cmd+Space from MacBook keyboard, mouse menu bar click). See `tools/qmk-hid-host/` for the macOS setup.
 - **Combos** (16 slots), **Mouse keys**, **Extrakeys** (consumer / media), **Tap dance** (8 slots), **Key overrides** (8 slots).
 - **No RGB, no OLED** — disabled to fit 28 KB ATmega32u4 flash.
 
-Final flash usage: ~27.5 KB of 28.6 KB available (~1.2 KB free).
+Final flash usage: ~28.2 KB of 28.6 KB available (~420 B free). Adding any further feature requires removing something else.
 
 ## How to build
 

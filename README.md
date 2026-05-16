@@ -149,7 +149,29 @@ RuEn keeps an internal `cur_lang` flag (RAM-only) that tracks which OS layout is
 2. If still off, the keyboard has `RuEn Sync` (USER01) bound on Layer 1 right home row pinky position. Hold `MO(2)` + tap that key to flip `cur_lang` without sending Cmd+Space.
 3. Worst case: unplug + replug USB. RuEn boots in `LANG_EN`. Set macOS to English to match.
 
-**System Cmd+Space from MacBook keyboard will desync** — avoid using it during a session.
+**System Cmd+Space from MacBook keyboard will desync** — avoid using it during a session, **unless** you have the `qmk-hid-host` daemon running (see below).
+
+## Optional: automatic sync via qmk-hid-host
+
+[zzeneg/qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) is a tiny Rust daemon that watches the macOS input source and ships the current layout to the keyboard over Raw HID every time it changes. With it running, the desync described above stops being possible: Cmd+Space from the MacBook keyboard, Punto Switcher's auto-conversion, mouse-click on the menu bar — anything that flips the OS layout — also flips `cur_lang` in the firmware within ~100 ms.
+
+```bash
+cd tools/qmk-hid-host
+./install.sh
+```
+
+The script downloads the binary, installs config + LaunchAgent, and starts the daemon. Logs in `~/Library/Logs/qmk-hid-host.log`. See `tools/qmk-hid-host/README.md` for the full story (Birman or non-Birman layouts, troubleshooting, uninstall).
+
+The firmware works fine without the daemon — RuEn falls back to its built-in `TD(0)` sync ritual.
+
+## Caps Word
+
+Temporary CAPS that auto-exits at the end of the word (Space, Enter, Esc, or any non-letter / non-digit / non-`-`). Inside the word, `-` becomes `_` — handy for `SCREAMING_SNAKE_CASE`.
+
+Two activation methods, pick whichever feels natural:
+
+- **Hold both shifts** (`F` and `J` home-row mods) past `TAPPING_TERM` (200 ms), then release.
+- **Double-tap plain Left Shift** (bottom-left corner of the base layer) — works only with `KC_LSFT`, not with mod-tap shifts.
 
 ## Hardware
 

@@ -2,9 +2,9 @@ diff --git a/keyboards/crkbd/crkbd.c b/keyboards/crkbd/crkbd.c
 index ae94088d..54879cd6 100644
 --- a/keyboards/crkbd/crkbd.c
 +++ b/keyboards/crkbd/crkbd.c
-@@ -17,6 +17,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@@ -17,6 +17,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
  #include "quantum.h"
 +#include "crkbd_ruen/ruen.h"
 +
@@ -17,13 +17,26 @@ index ae94088d..54879cd6 100644
 +    housekeeping_task_ruen();
 +    housekeeping_task_user();
 +}
- 
++
++// qmk-hid-host data type enum — must match host-side `DataType` in
++// https://github.com/zzeneg/qmk-hid-host/blob/main/src/data_type.rs
++// (_TIME = 0xAA, _VOLUME, _LAYOUT, ...)
++#define HID_HOST_LAYOUT 0xAC
++
++void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
++    if (length < 2) return;
++    if (data[0] != HID_HOST_LAYOUT) return;
++    // data[1] is the index into the `layouts` array configured in
++    // qmk-hid-host.json. Our convention: index 0 = English, 1 = Russian.
++    lang_sync_to(data[1] == 0 ? LANG_EN : LANG_RU);
++}
+
  #ifdef SWAP_HANDS_ENABLE
  __attribute__((weak)) const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
-@@ -155,10 +166,18 @@ bool oled_task_kb(void) {
+@@ -155,10 +179,18 @@ bool oled_task_kb(void) {
      return false;
  }
- 
+
 -bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 +bool process_record_kb_oled(uint16_t keycode, keyrecord_t *record) {
      if (record->event.pressed) {

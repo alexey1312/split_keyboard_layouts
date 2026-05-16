@@ -34,6 +34,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define VIAL_COMBO_ENTRIES 16
 #define COMBO_TERM 50
 
+// Caps Word activation:
+//   * Both shifts held simultaneously past TAPPING_TERM (works with our
+//     home-row mod-tap shifts LSFT_T(KC_F) and RSFT_T(KC_J) — hold both
+//     until the tapping term, then release).
+//   * Double tap on the plain LSHIFT key (Layer 0, row 2 col 0 of corne.vil)
+//     — works with KC_LSFT only, NOT with mod-tap shifts.
+// Either method exits on Space, Enter, Tab, Esc, or any non-word key.
+#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+#define DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
+
 //#define USE_MATRIX_I2C
 #ifdef KEYBOARD_crkbd_rev1_legacy
 #    undef USE_I2C
