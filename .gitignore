@@ -25,3 +25,8 @@ firmware/build/
 *.bak
 *.bak[0-9]
 *.orig
+
+# vil-to-keymap-drawer intermediate (SVG in imgs/ is committed; YAML is regenerated)
+tools/vil-to-keymap-drawer/corne.yaml
+tools/vil-to-keymap-drawer/.venv/
+tools/vil-to-keymap-drawer/__pycache__/

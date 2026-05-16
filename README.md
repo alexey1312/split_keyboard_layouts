@@ -23,6 +23,12 @@ unified punctuation regardless of the OS input source.
 
 Load either file via Vial → **File → Load saved layout**. If Vial warns about a different keyboard UID, click **Yes** — it will rewrite the UID on save.
 
+### Visual map (Corne)
+
+![Corne layout — all 4 layers with combos](imgs/corne-layout.svg)
+
+All 4 layers stacked. Combos appear as labelled bubbles with dotted dendrons to their constituent keys (e.g. `R+T → (`, `Y+U+I → ]`). Regenerated from `corne.vil` by [`tools/vil-to-keymap-drawer/`](tools/vil-to-keymap-drawer/) — run `./tools/vil-to-keymap-drawer/render.sh` after any keymap edit.
+
 ## Firmware
 
 Custom Vial-QMK build with:
