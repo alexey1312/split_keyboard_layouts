@@ -8,6 +8,12 @@ MacBook keyboard, mouse-click on the menu bar input source picker, Punto /
 Caramba auto-conversion — keeps `cur_lang` in sync. The classic RuEn desync
 goes away.
 
+> **Native macOS alternative:** [RuEnSync](https://github.com/alexey1312/ruen-sync-mac)
+> is a Swift menubar app that speaks the same wire protocol (`[0xAC, idx]`) — works with
+> the same unmodified firmware, but event-driven (no 100 ms polling), with `SMAppService`
+> autostart and a menubar icon. Pick one or the other (both fight for exclusive HID
+> access).
+
 ## How it fits together
 
 ```

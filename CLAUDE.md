@@ -12,6 +12,7 @@ Two **Vial-format keyboard layouts** (`.vil` JSON files) plus the **custom Vial-
 - `sofle.vil` — older Sofle layout, kept as a fallback. Works with stock Vial firmware (no custom keycodes needed).
 - `firmware/` — custom Vial-QMK sources to be dropped into a clone of `vial-kb/vial-qmk`. See `firmware/README.md` for the apply procedure and the full RuEn keycode table.
 - `tools/qmk-hid-host/` — macOS daemon glue. Watches the active OS input source and pushes the layout index to the Corne over Raw HID, keeping `cur_lang` in sync even when the language is switched outside the keyboard (Punto Switcher, Cmd+Space from MacBook keyboard, mouse menu-bar click). See `tools/qmk-hid-host/README.md`. Optional — without the daemon, the firmware falls back to its built-in sync via `RuEn Toggle`.
+- **Companion repo:** [`ruen-sync-mac`](https://github.com/alexey1312/ruen-sync-mac) — native macOS menubar app that speaks the same `[0xAC, idx]` wire protocol as qmk-hid-host. Event-driven (no polling), `SMAppService` login item, signed/notarized. Recommended over the Rust daemon for macOS-only users. Lives at `~/Developer/ruen-sync-mac/`.
 - `README.md` — user-facing overview (GitHub front page).
 - `CLAUDE.md` — this file.
 
@@ -93,7 +94,7 @@ Do **not** define `COMBO_COUNT` — Vial-QMK derives it from `VIAL_COMBO_ENTRIES
 - Keycode enum starts at `LG_START = QK_KB`. 36 keycodes total (see `firmware/README.md` for the full USER index → LG_* table).
 - `set_lang()` sends Cmd+Space (LCtl+Space if `keymap_config.swap_lctl_lgui`) and updates `cur_lang`.
 - `lang_sync_to(uint8_t lang)` does an **absolute** set of `cur_lang` without sending Cmd+Space. Used by `raw_hid_receive_kb` when the host daemon reports an external switch.
-- State is **RAM-only** — boots in `LANG_EN` and `mac_layout=false`. `mac_layout=false` matches user's actual Russian keyboard layout (PC-Russian variant) per empirical testing.
+- State is **RAM-only** — boots in `LANG_EN` and `mac_layout=false`. `mac_layout=false` matches user's actual Russian keyboard layout (PC-Russian variant) per empirical testing. The `RuEn Mac Tg` (USER28) keycode flips to `mac_layout=true` for macOS Russian variant when needed.
 
 ### Raw HID host sync (optional)
 

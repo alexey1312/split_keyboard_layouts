@@ -4,7 +4,7 @@ Custom Vial-QMK firmware for **Corne (crkbd) rev1** with:
 
 - **RuEn engine** — Mac language switching aware of internal `cur_lang` state, with auto-EN-switching bracket keycodes and unified punctuation across Russian/English layouts.
 - **Caps Word** — temporary CAPS that auto-exits on word break (Space/Enter/Esc or any non-letter/non-digit). Activates by holding both home-row mod-tap shifts past `TAPPING_TERM`, or by double-tapping the plain `KC_LSFT`. `-` becomes `_` inside the word.
-- **Raw HID host sync** — `raw_hid_receive_kb` accepts `[0xAC, idx]` packets from the [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) daemon and updates `cur_lang` without sending Cmd+Space. Closes the classic RuEn desync when language is switched outside the keyboard (Punto, Cmd+Space from MacBook keyboard, mouse menu bar click). See `tools/qmk-hid-host/` for the macOS setup.
+- **Raw HID host sync** — `raw_hid_receive_kb` accepts `[0xAC, idx]` packets from the host and updates `cur_lang` without sending Cmd+Space. Closes the classic RuEn desync when language is switched outside the keyboard (Punto, Cmd+Space from MacBook keyboard, mouse menu bar click). Two compatible host apps: [**RuEnSync**](https://github.com/alexey1312/ruen-sync-mac) (native macOS menubar app, recommended) or [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) (cross-platform Rust daemon).
 - **Combos** (16 slots), **Mouse keys**, **Extrakeys** (consumer / media), **Tap dance** (8 slots), **Key overrides** (8 slots).
 - **No RGB, no OLED** — disabled to fit 28 KB ATmega32u4 flash.
 
@@ -126,4 +126,4 @@ State is RAM-only (no EEPROM persistence). At boot:
 
 If desynced, use `RuEn Sync` (USER01) to flip the internal flag without sending keys, or `RuEn En` / `RuEn Ru` to force a specific state.
 
-`RuEn Mac Tg` (USER28) toggles between Mac Russian and Russian-PC variants. Default is Russian-PC (`mac_layout=false`) — if you are on macOS Russian (not Russian-PC), press USER28 once to switch.
+`RuEn Mac Tg` (USER28) toggles between Mac Russian and Russian-PC variants. Default is Russian-PC (`mac_layout=false`) — press USER28 once if you need Mac Russian behaviour.

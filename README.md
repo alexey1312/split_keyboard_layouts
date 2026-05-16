@@ -1,6 +1,20 @@
-# Custom keyboard layouts
+# split_keyboard_layouts
 
-Vial keymaps for split keyboards, optimised for **macOS** (Russian/English typing) with home-row mods, layer-tap thumb cluster, combos for brackets, and a built-in RuEn engine for unified punctuation between layouts.
+[![Vial](https://img.shields.io/badge/Vial-QMK-blue)](https://get.vial.today)
+[![Corne](https://img.shields.io/badge/Keyboard-foostan%20Corne-orange)](https://github.com/foostan/crkbd)
+[![macOS](https://img.shields.io/badge/Target-macOS-lightgrey)](https://www.apple.com/macos/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+Vial keymaps and custom Vial-QMK firmware for split keyboards (Corne + Sofle),
+tuned for **bilingual EN/RU typing on macOS**. Home-row mods, layer-tap thumb
+cluster, 10 combos for brackets, and a **built-in RuEn engine** that gives you
+unified punctuation regardless of the OS input source.
+
+> **Companion app:** [RuEnSync](https://github.com/alexey1312/ruen-sync-mac) — a
+> native macOS menubar app that watches the system input source and keeps the
+> firmware's `cur_lang` in sync over Raw HID. Recommended over the
+> [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) Rust daemon if you're on
+> macOS only (event-driven, signed, login-item via SMAppService).
 
 ## Layouts
 
@@ -56,7 +70,7 @@ See [`firmware/README.md`](firmware/README.md) for build & flash instructions an
 The keyboard is designed for this exact macOS configuration:
 
 1. **System Settings → Keyboard → Keyboard Shortcuts → Input Sources → "Select the previous input source"** = `⌘ + Space`. (Reassign Spotlight to another shortcut — e.g. `⌃ + Space`.) Without this, `RuEn Toggle` won't switch languages; it'll open Spotlight instead.
-2. **System Settings → Keyboard → Input Sources** should contain **English (ABC)** and **Russian** — the macOS native variant (NOT "Russian – PC"). The current firmware default is for Russian-PC; if you use macOS Russian, press `RuEn Mac Tg` (USER28) once after each boot, or change the default in `firmware/crkbd_ruen/ruen.c` line `static bool mac_layout = false;` to `true` and rebuild.
+2. **System Settings → Keyboard → Input Sources** should contain **English (ABC)** and **Russian**. The firmware default is `mac_layout=false` (Russian-PC behaviour). Press `RuEn Mac Tg` (USER28) on-demand if a particular text needs Mac Russian variant.
 3. Disable system shortcuts that collide with combos / key overrides (e.g. `⌘ + H` is blocked by the firmware, so disable any macOS apps that rely on it).
 
 ## Layer map (Corne, `corne.vil`)
@@ -151,18 +165,26 @@ RuEn keeps an internal `cur_lang` flag (RAM-only) that tracks which OS layout is
 
 **System Cmd+Space from MacBook keyboard will desync** — avoid using it during a session, **unless** you have the `qmk-hid-host` daemon running (see below).
 
-## Optional: automatic sync via qmk-hid-host
+## Optional: automatic OS-side sync
 
-[zzeneg/qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) is a tiny Rust daemon that watches the macOS input source and ships the current layout to the keyboard over Raw HID every time it changes. With it running, the desync described above stops being possible: Cmd+Space from the MacBook keyboard, Punto Switcher's auto-conversion, mouse-click on the menu bar — anything that flips the OS layout — also flips `cur_lang` in the firmware within ~100 ms.
+The firmware exposes a 1-byte Raw HID handshake (`[0xAC, idx]`) that any host-side
+program can use to push the current macOS input source into `cur_lang`. With it
+running, the desync described above stops being possible: Cmd+Space from the
+MacBook keyboard, Punto Switcher's auto-conversion, mouse-click on the menu bar
+— anything that flips the OS layout — also flips the firmware state.
 
-```bash
-cd tools/qmk-hid-host
-./install.sh
-```
+Two compatible host apps:
 
-The script downloads the binary, installs config + LaunchAgent, and starts the daemon. Logs in `~/Library/Logs/qmk-hid-host.log`. See `tools/qmk-hid-host/README.md` for the full story (Birman or non-Birman layouts, troubleshooting, uninstall).
+| App | When | How |
+| --- | --- | --- |
+| [**RuEnSync**](https://github.com/alexey1312/ruen-sync-mac) (recommended) | macOS only | Native menubar app. Event-driven, login-item via `SMAppService`. Just open it once. |
+| [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) | Linux / Windows / macOS | Cross-platform Rust daemon. Install on macOS via `cd tools/qmk-hid-host && ./install.sh`. Polls every 100 ms. |
 
-The firmware works fine without the daemon — RuEn falls back to its built-in `TD(0)` sync ritual.
+Either works with the **same unmodified firmware** — they speak identical wire
+protocol. Pick one (running both at once fights for exclusive HID access).
+
+The firmware works fine without any host app — RuEn falls back to its built-in
+`TD(0)` sync ritual.
 
 ## Caps Word
 
