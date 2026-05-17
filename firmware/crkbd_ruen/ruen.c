@@ -50,22 +50,28 @@ static void lang_sync(void) {
     cur_lang = (cur_lang == LANG_EN) ? LANG_RU : LANG_EN;
 }
 
+// LG_GRAVE / LG_TILD use KC_NONUS_BACKSLASH because macOS swaps the physical
+// roles of KC_GRAVE (0x35) and KC_NONUS_BACKSLASH (0x64) depending on whether
+// the board's USB HID country code reports ANSI or ISO. QMK / Pro Micro is
+// detected as ISO by macOS, so `/~ live on KC_NONUS_BACKSLASH; KC_GRAVE there
+// produces §/±. If you reflash a board that macOS detects as ANSI, swap these
+// two entries back to KC_GRAVE / KC_TILD.
 static const uint16_t en_table[] = {
-    KC_LBRC,  // LG_LBR
-    KC_RBRC,  // LG_RBR
-    KC_LCBR,  // LG_LCBR
-    KC_RCBR,  // LG_RCBR
-    KC_LT,    // LG_LT
-    KC_GT,    // LG_GT
-    KC_GRAVE, // LG_GRAVE
-    KC_TILD,  // LG_TILD
-    KC_AT,    // LG_AT
-    KC_HASH,  // LG_HASH
-    KC_DLR,   // LG_DLR
-    KC_CIRC,  // LG_CIRC
-    KC_AMPR,  // LG_AMPR
-    KC_PIPE,  // LG_PIPE
-    KC_QUOT,  // LG_QUOTE
+    KC_LBRC,                  // LG_LBR
+    KC_RBRC,                  // LG_RBR
+    KC_LCBR,                  // LG_LCBR
+    KC_RCBR,                  // LG_RCBR
+    KC_LT,                    // LG_LT
+    KC_GT,                    // LG_GT
+    KC_NONUS_BACKSLASH,       // LG_GRAVE  (`)
+    LSFT(KC_NONUS_BACKSLASH), // LG_TILD   (~)
+    KC_AT,                    // LG_AT
+    KC_HASH,                  // LG_HASH
+    KC_DLR,                   // LG_DLR
+    KC_CIRC,                  // LG_CIRC
+    KC_AMPR,                  // LG_AMPR
+    KC_PIPE,                  // LG_PIPE
+    KC_QUOT,                  // LG_QUOTE
 };
 
 bool pre_process_record_ruen(uint16_t keycode, keyrecord_t *record) {
