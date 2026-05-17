@@ -34,6 +34,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define VIAL_COMBO_ENTRIES 16
 #define COMBO_TERM 50
 
+// Flash diet for ATmega32u4 (~420 B free before these).
+// All of the disabled features below are unused in corne.vil; LTO will drop
+// the dead code paths once the macros are defined.
+#define NO_ACTION_ONESHOT   // QMK one-shot mods — not used
+#define NO_ACTION_MACRO     // legacy TMK MACRO() actions — Vial uses dynamic_keymap macros instead
+#define NO_ACTION_FUNCTION  // legacy fn_actions[] — replaced by process_record_user long ago
+// NO_DEBUG / NO_PRINT are injected on the command line by QMK's build system,
+// so we guard with #ifndef as a safety net for direct (non-bootstrap) builds.
+#ifndef NO_DEBUG
+#    define NO_DEBUG
+#endif
+#ifndef NO_PRINT
+#    define NO_PRINT
+#endif
+#define LAYER_STATE_8BIT    // we use 4 layers, 8-bit layer_state_t is enough
+
 // Caps Word activation:
 //   * Both shifts held simultaneously past TAPPING_TERM (works with our
 //     home-row mod-tap shifts LSFT_T(KC_F) and RSFT_T(KC_J) — hold both
