@@ -10,9 +10,10 @@ Custom Vial-QMK firmware for **Corne (crkbd) rev1** with:
 
   Compatible host apps: [**RuEnSync**](https://github.com/alexey1312/ruen-sync-mac) (native macOS menubar app, sends both packet shapes, recommended) or [qmk-hid-host](https://github.com/zzeneg/qmk-hid-host) (cross-platform Rust daemon, sends only `0xAC`).
 - **Combos** (16 slots), **Mouse keys**, **Extrakeys** (consumer / media), **Tap dance** (8 slots), **Key overrides** (8 slots).
+- **Tri-layer** — holding both SYM (1) and NAV (2) at the same time activates FUN (3). Removes the need for an explicit `MO(3)` keycode in either source layer. Implemented via `layer_state_set_kb` calling `update_tri_layer_state(state, 1, 2, 3)` in `crkbd.c.patch`.
 - **No RGB, no OLED** — disabled to fit 28 KB ATmega32u4 flash.
 
-Final flash usage: ~28.2 KB of 28.6 KB available (~420 B free). Adding any further feature requires removing something else.
+Final flash usage: ~26.0 KB of 28.0 KB available (~2.6 KB free).
 
 ## How to build
 

@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## What this repo is
 
@@ -14,7 +14,7 @@ Two **Vial-format keyboard layouts** (`.vil` JSON files) plus the **custom Vial-
 - `tools/qmk-hid-host/` — macOS daemon glue. Watches the active OS input source and pushes the layout index to the Corne over Raw HID, keeping `cur_lang` in sync even when the language is switched outside the keyboard (Punto Switcher, Cmd+Space from MacBook keyboard, mouse menu-bar click). See `tools/qmk-hid-host/README.md`. Optional — without the daemon, the firmware falls back to its built-in sync via `RuEn Toggle`.
 - **Companion repo:** [`ruen-sync-mac`](https://github.com/alexey1312/ruen-sync-mac) — native macOS menubar app that speaks the same `[0xAC, idx]` wire protocol as qmk-hid-host. Event-driven (no polling), `SMAppService` login item, signed/notarized. Recommended over the Rust daemon for macOS-only users. Lives at `~/Developer/ruen-sync-mac/`.
 - `README.md` — user-facing overview (GitHub front page).
-- `CLAUDE.md` — this file.
+- `AGENTS.md` — this file.
 
 ## Hardware
 
@@ -81,7 +81,7 @@ VPATH += keyboards/crkbd/crkbd_ruen
 SRC   += ruen.c
 ```
 
-LTO is required — without it the build does not fit. Currently ~26.0 KB / 28.0 KB used (~2.6 KB free). Raw HID is already enabled by Vial-QMK itself for the Vial protocol, so no extra flag is needed for the host sync described below.
+LTO is required — without it the build does not fit. Currently ~28.2 KB / 28.6 KB used (~420 B free). Raw HID is already enabled by Vial-QMK itself for the Vial protocol, so no extra flag is needed for the host sync described below.
 
 ### Current `config.h` extras
 
@@ -102,10 +102,6 @@ DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD
 `QMK_SETTINGS = no`: enabling it would add ~5.5 KB of Vial UI runtime tuning support, but firmware does not fit (overflow by ~4.3 KB on ATmega32u4). For dynamic tuning a RP2040-based controller (Elite-Pi / Liatris) would be required.
 
 Do **not** define `COMBO_COUNT` — Vial-QMK derives it from `VIAL_COMBO_ENTRIES` and a duplicate `#define` errors out.
-
-### Tri-layer (SYM + NAV → FUN)
-
-`crkbd.c.patch` defines `layer_state_set_kb` calling `update_tri_layer_state(state, 1, 2, 3)`. Holding the `LT1(KC_SPACE)` thumb together with the `MO(2)` thumb activates layer 3 (F-row / media) without needing an explicit `MO(3)` keycode anywhere in `corne.vil`. Removing the entry costs no flash and makes the layout symmetric by construction. If you ever want to disable tri-layer, drop `MO(3)` back onto an unused thumb slot in `corne.vil` via Vial UI — no reflash required.
 
 ### RuEn engine
 
@@ -243,6 +239,6 @@ This `launchctl bootout`s the agent, removes the plist and the binary. **Keeps**
 - **Gatekeeper.** First launch may be blocked. The install script tries to strip `com.apple.quarantine` via `xattr -d`, which usually works; if it doesn't, run `~/.local/bin/qmk-hid-host -c ~/.config/qmk-hid-host/config.json` once manually, allow in System Settings → Privacy & Security, then re-run `install.sh`.
 - **Daemon dies if Corne is unplugged.** That's expected — `KeepAlive = true` in the plist restarts it within `ThrottleInterval` (10 s). On re-plug the connection just resumes.
 
-## What is allowed in `.claude/settings.local.json`
+## What is allowed in `.Codex/settings.local.json`
 
 Pre-approved diagnostic commands (no permission prompt): `qmk --version`, `avr-gcc --version`, `avrdude -?`. Any other build/flash command will ask.

@@ -1,8 +1,8 @@
 diff --git a/keyboards/crkbd/crkbd.c b/keyboards/crkbd/crkbd.c
-index ae94088d..1e212db8 100644
+index ae94088d..bfb38fc3 100644
 --- a/keyboards/crkbd/crkbd.c
 +++ b/keyboards/crkbd/crkbd.c
-@@ -17,6 +17,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@@ -17,6 +17,61 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
  #include "quantum.h"
@@ -16,6 +16,14 @@ index ae94088d..1e212db8 100644
 +void housekeeping_task_kb(void) {
 +    housekeeping_task_ruen();
 +    housekeeping_task_user();
++}
++
++// Tri-layer: holding both SYM (1) and NAV (2) at the same time activates
++// FUN (3). Removes the need for an explicit MO(3) keycode in either source
++// layer — symmetric by construction.
++layer_state_t layer_state_set_kb(layer_state_t state) {
++    state = update_tri_layer_state(state, 1, 2, 3);
++    return layer_state_set_user(state);
 +}
 +
 +// qmk-hid-host data type enum — must match host-side `DataType` in
@@ -56,7 +64,7 @@ index ae94088d..1e212db8 100644
  
  #ifdef SWAP_HANDS_ENABLE
  __attribute__((weak)) const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
-@@ -155,10 +202,18 @@ bool oled_task_kb(void) {
+@@ -155,10 +210,18 @@ bool oled_task_kb(void) {
      return false;
  }
  
